@@ -1,0 +1,936 @@
+/* Rolldeo Plugin Styles */
+
+/* ============================================================================
+   View Container
+   ============================================================================ */
+
+.rolldeo-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.rolldeo-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 12px;
+}
+
+/* ============================================================================
+   Header & Tabs
+   ============================================================================ */
+
+.rolldeo-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+}
+
+.rolldeo-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.rolldeo-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.rolldeo-tab:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.rolldeo-tab.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rolldeo-tab-badge {
+  font-size: 0.75em;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--background-modifier-border);
+}
+
+.rolldeo-tab.is-active .rolldeo-tab-badge {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.rolldeo-quick-roll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.rolldeo-quick-roll-btn:hover {
+  background: var(--interactive-accent-hover);
+}
+
+/* ============================================================================
+   Search / Filter
+   ============================================================================ */
+
+.rolldeo-search-container {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.rolldeo-search-input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  font-size: 0.9em;
+}
+
+.rolldeo-search-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.rolldeo-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.rolldeo-search-clear:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* ============================================================================
+   Empty States
+   ============================================================================ */
+
+.rolldeo-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.rolldeo-empty-icon {
+  margin-bottom: 12px;
+  color: var(--text-faint);
+}
+
+.rolldeo-empty-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.rolldeo-empty-state p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.rolldeo-empty-state .rolldeo-empty-hint {
+  font-size: 0.85em;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+.rolldeo-no-results {
+  padding: 20px;
+  text-align: center;
+}
+
+.rolldeo-no-results p {
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.rolldeo-no-results a {
+  color: var(--interactive-accent);
+  cursor: pointer;
+}
+
+/* ============================================================================
+   Collection Browser
+   ============================================================================ */
+
+.rolldeo-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rolldeo-collection {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--background-secondary);
+}
+
+.rolldeo-collection-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.rolldeo-collection-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.rolldeo-collapse-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.rolldeo-collapse-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rolldeo-collection-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.rolldeo-collection-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rolldeo-collection-count {
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.rolldeo-collection-content {
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.rolldeo-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 0.75em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rolldeo-section-divider::before,
+.rolldeo-section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--background-modifier-border);
+}
+
+/* ============================================================================
+   Tables Section (Collapsible)
+   ============================================================================ */
+
+.rolldeo-tables-section {
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+}
+
+.rolldeo-tables-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--background-primary-alt);
+  transition: background 0.15s ease;
+}
+
+.rolldeo-tables-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.rolldeo-tables-header .rolldeo-collapse-icon {
+  color: var(--text-faint);
+}
+
+.rolldeo-tables-header .rolldeo-collapse-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.rolldeo-tables-header-text {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rolldeo-tables-content {
+  background: var(--background-primary);
+}
+
+/* ============================================================================
+   Table Items
+   ============================================================================ */
+
+.rolldeo-table-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  transition: background 0.15s ease;
+}
+
+.rolldeo-table-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Roll icon (left side) - clickable */
+.rolldeo-table-roll-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.rolldeo-table-roll-icon:hover {
+  background: var(--interactive-accent-hover);
+  transform: scale(1.05);
+}
+
+.rolldeo-table-roll-icon:active {
+  transform: scale(0.95);
+}
+
+.rolldeo-table-roll-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rolldeo-table-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rolldeo-table-name {
+  font-weight: 500;
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rolldeo-table-desc {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.rolldeo-table-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.rolldeo-tag {
+  font-size: 0.7em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.rolldeo-tag-more {
+  font-size: 0.7em;
+  color: var(--text-faint);
+}
+
+/* Insert button (right side) */
+.rolldeo-insert-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.rolldeo-insert-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+  transform: scale(1.05);
+}
+
+.rolldeo-insert-btn:active {
+  transform: scale(0.95);
+}
+
+.rolldeo-insert-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================================================
+   History
+   ============================================================================ */
+
+.rolldeo-history-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.rolldeo-clear-history-btn {
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rolldeo-clear-history-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--text-muted);
+}
+
+.rolldeo-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rolldeo-history-item {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rolldeo-history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--background-primary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.rolldeo-history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rolldeo-history-icon {
+  display: flex;
+  color: var(--text-muted);
+}
+
+.rolldeo-history-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rolldeo-history-table-name {
+  font-weight: 600;
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rolldeo-history-collection {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.rolldeo-history-time {
+  font-size: 0.8em;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.rolldeo-history-result {
+  padding: 12px;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+/* Markdown content styling in history */
+.rolldeo-history-result p {
+  margin: 0 0 8px 0;
+}
+
+.rolldeo-history-result p:last-child {
+  margin-bottom: 0;
+}
+
+.rolldeo-history-result ul,
+.rolldeo-history-result ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.rolldeo-history-result h1,
+.rolldeo-history-result h2,
+.rolldeo-history-result h3,
+.rolldeo-history-result h4,
+.rolldeo-history-result h5,
+.rolldeo-history-result h6 {
+  margin: 12px 0 8px 0;
+}
+
+.rolldeo-history-result h1:first-child,
+.rolldeo-history-result h2:first-child,
+.rolldeo-history-result h3:first-child,
+.rolldeo-history-result h4:first-child,
+.rolldeo-history-result h5:first-child,
+.rolldeo-history-result h6:first-child {
+  margin-top: 0;
+}
+
+.rolldeo-history-result blockquote {
+  margin: 8px 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--interactive-accent);
+  color: var(--text-muted);
+}
+
+.rolldeo-history-result code {
+  background: var(--background-primary-alt);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.rolldeo-history-result pre {
+  background: var(--background-primary-alt);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.rolldeo-history-result strong {
+  font-weight: 600;
+}
+
+.rolldeo-history-result em {
+  font-style: italic;
+}
+
+/* ============================================================================
+   History Descriptions
+   ============================================================================ */
+
+.rolldeo-history-descriptions {
+  border-top: 1px dashed var(--background-modifier-border);
+  padding: 12px;
+  background: var(--background-primary-alt);
+}
+
+.rolldeo-description-item {
+  margin-bottom: 12px;
+}
+
+.rolldeo-description-item:last-child {
+  margin-bottom: 0;
+}
+
+.rolldeo-description-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rolldeo-description-table {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.rolldeo-description-value {
+  font-size: 0.85em;
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.rolldeo-description-content {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.rolldeo-description-content p {
+  margin: 0 0 8px 0;
+}
+
+.rolldeo-description-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================================
+   History Actions
+   ============================================================================ */
+
+.rolldeo-history-actions {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-primary-alt);
+}
+
+.rolldeo-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rolldeo-action-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--text-muted);
+  color: var(--text-normal);
+}
+
+.rolldeo-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ============================================================================
+   Table Picker Modal
+   ============================================================================ */
+
+.rolldeo-suggestion {
+  padding: 6px 0;
+}
+
+.rolldeo-suggestion-name {
+  font-weight: 500;
+  font-size: 0.95em;
+}
+
+.rolldeo-suggestion-collection {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.rolldeo-suggestion-desc {
+  font-size: 0.8em;
+  color: var(--text-faint);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   Roll Result Modal
+   ============================================================================ */
+
+.rolldeo-result-modal {
+  padding: 0;
+}
+
+.rolldeo-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.rolldeo-result-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rolldeo-result-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rolldeo-result-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.rolldeo-result-table-name {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.rolldeo-result-collection {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.rolldeo-result-content {
+  padding: 20px;
+  font-size: 1em;
+  line-height: 1.6;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.rolldeo-result-content p {
+  margin: 0 0 12px 0;
+}
+
+.rolldeo-result-content p:last-child {
+  margin-bottom: 0;
+}
+
+.rolldeo-result-content ul,
+.rolldeo-result-content ol {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.rolldeo-result-content h1,
+.rolldeo-result-content h2,
+.rolldeo-result-content h3,
+.rolldeo-result-content h4 {
+  margin: 16px 0 8px 0;
+}
+
+.rolldeo-result-content h1:first-child,
+.rolldeo-result-content h2:first-child,
+.rolldeo-result-content h3:first-child,
+.rolldeo-result-content h4:first-child {
+  margin-top: 0;
+}
+
+.rolldeo-result-content blockquote {
+  margin: 12px 0;
+  padding: 8px 16px;
+  border-left: 4px solid var(--interactive-accent);
+  background: var(--background-secondary);
+  border-radius: 0 6px 6px 0;
+}
+
+.rolldeo-result-content code {
+  background: var(--background-secondary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.rolldeo-result-content strong {
+  font-weight: 600;
+}
+
+.rolldeo-result-descriptions {
+  padding: 16px 20px;
+  background: var(--background-secondary);
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.rolldeo-result-descriptions h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.rolldeo-result-description-item {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: var(--background-primary);
+  border-radius: 6px;
+}
+
+.rolldeo-result-description-item:last-child {
+  margin-bottom: 0;
+}
+
+.rolldeo-result-description-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rolldeo-result-description-table {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.rolldeo-result-description-value {
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.rolldeo-result-description-content {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.rolldeo-result-description-content p {
+  margin: 0;
+}
+
+.rolldeo-result-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+}
+
+.rolldeo-result-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.15s ease;
+}
+
+.rolldeo-result-action-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--text-muted);
+}
+
+.rolldeo-result-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.rolldeo-result-action-btn.mod-cta {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rolldeo-result-action-btn.mod-cta:hover {
+  background: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
+}
+
+/* ============================================================================
+   Scrollbar Styling (optional, for webkit browsers)
+   ============================================================================ */
+
+.rolldeo-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rolldeo-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rolldeo-content::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+}
+
+.rolldeo-content::-webkit-scrollbar-thumb:hover {
+  background: var(--background-modifier-border-hover);
+}
+
+/* ============================================================================
+   Animations
+   ============================================================================ */
+
+@keyframes rolldeo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rolldeo-table-roll-icon:active svg {
+  animation: rolldeo-spin 0.3s ease-out;
+}
