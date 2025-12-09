@@ -97,7 +97,7 @@ Rolldeo uses the **Random Table JSON Spec v1.0**. Table files are JSON files wit
 - **Tables Folder** - Restrict table scanning to a specific folder (leave empty to scan entire vault)
 - **History Length** - Number of rolls to keep in history (10-100)
 - **Show Descriptions** - Display entry descriptions in roll results
-- **Enable Trace** - Capture execution traces for debugging
+- **Enable Trace** - Capture execution traces for debugging. Useful for determining value chaining.
 
 ## Usage Tips
 
