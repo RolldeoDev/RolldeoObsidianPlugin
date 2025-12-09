@@ -118,7 +118,7 @@ export interface CaptureAccessToken {
 export interface CollectToken {
   type: 'collect'
   varName: string // variable name (without $)
-  property: 'value' | string // .value or @propName (stored without @)
+  property: string // .value or @propName (stored without @)
   unique?: boolean // |unique modifier
   separator?: string // custom separator
 }

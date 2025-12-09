@@ -242,7 +242,7 @@ export interface CaptureAccessMetadata {
   /** Index accessed (if any) */
   index?: number
   /** Property accessed */
-  property: 'count' | 'value' | string
+  property: string
   /** Whether variable was found */
   found: boolean
   /** Total items in capture variable */
@@ -256,7 +256,7 @@ export interface CollectMetadata {
   /** Variable name collected from */
   varName: string
   /** Property collected */
-  property: 'value' | string
+  property: string
   /** Whether unique was applied */
   unique: boolean
   /** Separator used */

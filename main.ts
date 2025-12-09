@@ -13,7 +13,6 @@ import {
   TFile,
   TAbstractFile,
   ItemView,
-  Menu,
   FuzzySuggestModal,
   debounce,
   setIcon,
@@ -99,8 +98,9 @@ export default class RolldeoPlugin extends Plugin {
     this.registerView(VIEW_TYPE_ROLLER, (leaf) => new RollerView(leaf, this));
 
     // Add ribbon icon
-    this.addRibbonIcon('dice', 'Open Rolldeo Roller', () => {
-      this.activateView();
+    // eslint-disable-next-line obsidianmd/ui/sentence-case -- Rolldeo is a brand name
+    this.addRibbonIcon('dice', 'Open Rolldeo roller', () => {
+      void this.activateView();
     });
 
     // Load collections from vault
@@ -367,7 +367,7 @@ export default class RolldeoPlugin extends Plugin {
             pathToIdMap.set(doc.metadata.namespace, file.path);
           }
         }
-      } catch (e) {
+      } catch {
         // Skip invalid files silently
       }
     }
@@ -377,13 +377,20 @@ export default class RolldeoPlugin extends Plugin {
   }
 
   isRandomTableDocument(obj: unknown): obj is RandomTableDocument {
+    if (
+      typeof obj !== 'object' ||
+      obj === null ||
+      !('metadata' in obj) ||
+      !('tables' in obj)
+    ) {
+      return false;
+    }
+    const metadata = (obj as { metadata: unknown }).metadata;
     return (
-      typeof obj === 'object' &&
-      obj !== null &&
-      'metadata' in obj &&
-      'tables' in obj &&
-      typeof (obj as any).metadata === 'object' &&
-      (obj as any).metadata?.specVersion === '1.0'
+      typeof metadata === 'object' &&
+      metadata !== null &&
+      'specVersion' in metadata &&
+      (metadata as { specVersion: unknown }).specVersion === '1.0'
     );
   }
 
@@ -404,7 +411,7 @@ export default class RolldeoPlugin extends Plugin {
         this.engine.resolveImports();
         this.refreshView();
       }
-    } catch (e) {
+    } catch {
       // Invalid JSON, skip
     }
   }
@@ -422,7 +429,7 @@ export default class RolldeoPlugin extends Plugin {
         this.engine.resolveImports();
         this.refreshView();
       }
-    } catch (e) {
+    } catch {
       // Invalid JSON, skip
     }
   }
@@ -455,7 +462,7 @@ export default class RolldeoPlugin extends Plugin {
         this.engine.resolveImports();
         this.refreshView();
       }
-    } catch (e) {
+    } catch {
       // Invalid JSON, skip
     }
   }
@@ -478,7 +485,7 @@ export default class RolldeoPlugin extends Plugin {
     }
 
     if (leaf) {
-      workspace.revealLeaf(leaf);
+      void workspace.revealLeaf(leaf);
     }
   }
 
@@ -595,7 +602,7 @@ class RollerView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Rolldeo Roller';
+    return 'Rolldeo roller';
   }
 
   getIcon(): string {
@@ -715,6 +722,7 @@ class RollerView extends ItemView {
       emptyState.createEl('p', { text: 'No table collections found' });
       emptyState.createEl('p', {
         cls: 'rolldeo-empty-hint',
+        // eslint-disable-next-line obsidianmd/ui/sentence-case -- specVersion is a JSON property name
         text: 'Add .json files with specVersion: "1.0" to your vault'
       });
       return;
@@ -944,7 +952,7 @@ class RollerView extends ItemView {
     const historyHeader = container.createDiv({ cls: 'rolldeo-history-header' });
     const clearBtn = historyHeader.createEl('button', {
       cls: 'rolldeo-clear-history-btn',
-      text: 'Clear History',
+      text: 'Clear history',
     });
     clearBtn.onclick = () => {
       this.plugin.rollHistory = [];
@@ -954,7 +962,7 @@ class RollerView extends ItemView {
     const historyList = container.createDiv({ cls: 'rolldeo-history-list' });
 
     for (const entry of this.plugin.rollHistory) {
-      this.renderHistoryItem(historyList, entry);
+      void this.renderHistoryItem(historyList, entry);
     }
   }
 
@@ -1182,7 +1190,7 @@ class RollResultModal extends Modal {
         descTab.onclick = () => {
           // Toggle: collapse if already active, otherwise switch to this tab
           this.activeTab = this.activeTab === 'descriptions' ? null : 'descriptions';
-          this.renderModal();
+          void this.renderModal();
         };
       }
 
@@ -1201,7 +1209,7 @@ class RollResultModal extends Modal {
         traceTab.onclick = () => {
           // Toggle: collapse if already active, otherwise switch to this tab
           this.activeTab = this.activeTab === 'trace' ? null : 'trace';
-          this.renderModal();
+          void this.renderModal();
         };
       }
 
@@ -1309,7 +1317,7 @@ class RollResultModal extends Modal {
 
     const expandAllBtn = traceControls.createEl('button', {
       cls: 'rolldeo-trace-control-btn',
-      text: 'Expand All'
+      text: 'Expand all'
     });
     expandAllBtn.onclick = () => {
       this.expandAllNodes(trace.root);
@@ -1622,8 +1630,6 @@ class RolldeoSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Rolldeo Roller Settings' });
-
     new Setting(containerEl)
       .setName('Tables folder')
       .setDesc('Only load table files from this folder (leave empty to scan entire vault)')
@@ -1678,7 +1684,7 @@ class RolldeoSettingTab extends PluginSettingTab {
       );
 
     // Stats section
-    containerEl.createEl('h3', { text: 'Statistics' });
+    new Setting(containerEl).setName('Statistics').setHeading();
 
     const collections = this.plugin.engine.listCollections();
     let totalTables = 0;

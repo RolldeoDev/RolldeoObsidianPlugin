@@ -347,7 +347,7 @@ export class RandomTableEngine {
           description: table.description,
           tags: table.tags,
           hidden: table.hidden,
-          entryCount: table.type === 'simple' ? (table as SimpleTable).entries.length : undefined,
+          entryCount: table.type === 'simple' ? table.entries.length : undefined,
           resultType: table.resultType,
         })
       }
@@ -450,7 +450,7 @@ export class RandomTableEngine {
         description: table.description,
         tags: table.tags,
         hidden: table.hidden,
-        entryCount: table.type === 'simple' ? (table as SimpleTable).entries.length : undefined,
+        entryCount: table.type === 'simple' ? table.entries.length : undefined,
         alias,
         sourceNamespace: collection.document.metadata.namespace,
         sourceCollectionName: collection.document.metadata.name,
@@ -800,7 +800,7 @@ export class RandomTableEngine {
 
     // Recursively resolve parent's inheritance (using parent's collection context)
     const resolvedParent = this.resolveTableInheritance(
-      parentResult.table as SimpleTable,
+      parentResult.table,
       parentResult.collectionId,
       depth + 1
     )
@@ -911,11 +911,11 @@ export class RandomTableEngine {
       let result: { text: string; resultType?: string; assets?: Assets; placeholders?: EvaluatedSets; entryId?: string }
 
       if (table.type === 'simple') {
-        result = this.rollSimple(table as SimpleTable, context, collectionId, options)
+        result = this.rollSimple(table, context, collectionId, options)
       } else if (table.type === 'composite') {
-        result = this.rollComposite(table as CompositeTable, context, collectionId, options)
+        result = this.rollComposite(table, context, collectionId, options)
       } else if (table.type === 'collection') {
-        result = this.rollCollection(table as CollectionTable, context, collectionId, options)
+        result = this.rollCollection(table, context, collectionId, options)
       } else {
         throw new Error(`Unknown table type: ${(table as Table).type}`)
       }
@@ -1098,7 +1098,7 @@ export class RandomTableEngine {
       for (const id of ids) {
         const t = this.getTable(id, collectionId)
         if (t && t.type === 'simple') {
-          result.push({ id, table: t as SimpleTable })
+          result.push({ id, table: t })
         }
       }
       return result

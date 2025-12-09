@@ -192,7 +192,7 @@ function validateMetadata(doc: RandomTableDocument, issues: ValidationIssue[]): 
     issues.push({
       severity: 'error',
       code: 'INVALID_SPEC_VERSION',
-      message: `Unsupported spec version: ${meta.specVersion}`,
+      message: `Unsupported spec version: ${String(meta.specVersion)}`,
       path: 'metadata.specVersion',
       suggestion: 'Use specVersion "1.0"',
     })
@@ -265,11 +265,11 @@ function validateTable(
 
   // Type-specific validation
   if (table.type === 'simple') {
-    validateSimpleTable(table as SimpleTable, path, issues)
+    validateSimpleTable(table, path, issues)
   } else if (table.type === 'composite') {
-    validateCompositeTable(table as CompositeTable, path, tableIds, issues)
+    validateCompositeTable(table, path, tableIds, issues)
   } else if (table.type === 'collection') {
-    validateCollectionTable(table as CollectionTable, path, tableIds, issues)
+    validateCollectionTable(table, path, tableIds, issues)
   }
 
   // Validate table-level shared variables
