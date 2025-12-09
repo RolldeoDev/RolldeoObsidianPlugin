@@ -21,12 +21,13 @@ import {
 
 import { RandomTableEngine, TableInfo, TemplateInfo, RollOptions } from './engine/core';
 import type { RandomTableDocument, RollResult } from './engine/types';
+import type { RollTrace, TraceNode, TraceNodeType } from './engine/core/trace';
 
 // ============================================================================
 // Constants
 // ============================================================================
 
-export const VIEW_TYPE_ROLLER = 'rolldeo-roller';
+export const VIEW_TYPE_ROLLER = 'rolldeo-roller-view';
 
 /** Delay in ms to wait for view to be ready after opening a file */
 const VIEW_READY_DELAY_MS = 100;
@@ -98,7 +99,7 @@ export default class RolldeoPlugin extends Plugin {
     this.registerView(VIEW_TYPE_ROLLER, (leaf) => new RollerView(leaf, this));
 
     // Add ribbon icon
-    this.addRibbonIcon('dice', 'Open Rolldeo', () => {
+    this.addRibbonIcon('dice', 'Open Rolldeo Roller', () => {
       this.activateView();
     });
 
@@ -594,7 +595,7 @@ class RollerView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Rolldeo';
+    return 'Rolldeo Roller';
   }
 
   getIcon(): string {
@@ -1098,6 +1099,10 @@ class RollResultModal extends Modal {
   private collectionId: string;
   private isTemplate: boolean;
   private component: Component;
+  private activeTab: 'descriptions' | 'trace' | null = 'descriptions';
+  private expandedTraceNodes: Set<string> = new Set();
+  private allTraceExpanded: boolean = false;
+  private traceTreeContainer: HTMLElement | null = null;
 
   constructor(
     app: App,
@@ -1122,6 +1127,10 @@ class RollResultModal extends Modal {
 
   async onOpen() {
     this.component.load();
+    await this.renderModal();
+  }
+
+  private async renderModal() {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass('rolldeo-result-modal');
@@ -1144,25 +1153,67 @@ class RollResultModal extends Modal {
       this.component
     );
 
-    // Descriptions (if any)
-    if (this.plugin.settings.showDescriptions && this.result.descriptions && this.result.descriptions.length > 0) {
-      const descriptionsDiv = contentEl.createDiv({ cls: 'rolldeo-result-descriptions' });
-      descriptionsDiv.createEl('h4', { text: 'Details' });
+    // Check if we have descriptions or trace to show tabs
+    const hasDescriptions = this.plugin.settings.showDescriptions &&
+      this.result.descriptions && this.result.descriptions.length > 0;
+    const hasTrace = this.plugin.settings.enableTrace && this.result.trace;
 
-      for (const desc of this.result.descriptions) {
-        const descItem = descriptionsDiv.createDiv({ cls: 'rolldeo-result-description-item' });
-        const descHeader = descItem.createDiv({ cls: 'rolldeo-result-description-header' });
-        descHeader.createSpan({ cls: 'rolldeo-result-description-table', text: desc.tableName });
-        descHeader.createSpan({ cls: 'rolldeo-result-description-value', text: desc.rolledValue });
+    // Auto-switch to trace tab if no descriptions but trace is available
+    if (!hasDescriptions && hasTrace && this.activeTab === 'descriptions') {
+      this.activeTab = 'trace';
+    }
 
-        const descContent = descItem.createDiv({ cls: 'rolldeo-result-description-content' });
-        await MarkdownRenderer.render(
-          this.app,
-          desc.description,
-          descContent,
-          '',
-          this.component
-        );
+    // Tabs (only show if we have either descriptions or trace)
+    if (hasDescriptions || hasTrace) {
+      const tabsContainer = contentEl.createDiv({ cls: 'rolldeo-result-tabs' });
+
+      if (hasDescriptions) {
+        const descTab = tabsContainer.createDiv({
+          cls: `rolldeo-result-tab ${this.activeTab === 'descriptions' ? 'is-active' : ''}`,
+        });
+        const descIcon = descTab.createSpan({ cls: 'rolldeo-result-tab-icon' });
+        setIcon(descIcon, 'list');
+        descTab.createSpan({ text: 'Descriptions' });
+        const descCount = tabsContainer.createSpan({
+          cls: 'rolldeo-result-tab-badge',
+          text: String(this.result.descriptions?.length || 0)
+        });
+        descTab.appendChild(descCount);
+        descTab.onclick = () => {
+          // Toggle: collapse if already active, otherwise switch to this tab
+          this.activeTab = this.activeTab === 'descriptions' ? null : 'descriptions';
+          this.renderModal();
+        };
+      }
+
+      if (hasTrace) {
+        const traceTab = tabsContainer.createDiv({
+          cls: `rolldeo-result-tab ${this.activeTab === 'trace' ? 'is-active' : ''}`,
+        });
+        const traceIcon = traceTab.createSpan({ cls: 'rolldeo-result-tab-icon' });
+        setIcon(traceIcon, 'git-branch');
+        traceTab.createSpan({ text: 'Trace' });
+        const traceCount = traceTab.createSpan({
+          cls: 'rolldeo-result-tab-badge',
+          text: String(this.result.trace?.stats.nodeCount || 0)
+        });
+        traceTab.appendChild(traceCount);
+        traceTab.onclick = () => {
+          // Toggle: collapse if already active, otherwise switch to this tab
+          this.activeTab = this.activeTab === 'trace' ? null : 'trace';
+          this.renderModal();
+        };
+      }
+
+      // Tab content (only render if a tab is active)
+      if (this.activeTab !== null) {
+        const tabContent = contentEl.createDiv({ cls: 'rolldeo-result-tab-content' });
+
+        if (this.activeTab === 'descriptions' && hasDescriptions) {
+          await this.renderDescriptionsTab(tabContent);
+        } else if (this.activeTab === 'trace' && hasTrace) {
+          this.renderTraceTab(tabContent, this.result.trace!);
+        }
       }
     }
 
@@ -1179,7 +1230,9 @@ class RollResultModal extends Modal {
           ? this.plugin.rollTemplate(this.tableId, this.collectionId)
           : this.plugin.roll(this.tableId, this.collectionId);
         this.result = newResult;
-        await this.refreshContent();
+        this.expandedTraceNodes.clear();
+        this.allTraceExpanded = false;
+        await this.renderModal();
       } catch (error) {
         console.error('Rolldeo: Error re-rolling', error);
         new Notice(`Error re-rolling: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -1215,51 +1268,225 @@ class RollResultModal extends Modal {
     };
   }
 
-  private async refreshContent() {
-    const resultContent = this.contentEl.querySelector('.rolldeo-result-content');
-    if (resultContent) {
-      resultContent.empty();
+  private async renderDescriptionsTab(container: HTMLElement) {
+    if (!this.result.descriptions) return;
+
+    for (const desc of this.result.descriptions) {
+      const descItem = container.createDiv({ cls: 'rolldeo-result-description-item' });
+      const descHeader = descItem.createDiv({ cls: 'rolldeo-result-description-header' });
+      descHeader.createSpan({ cls: 'rolldeo-result-description-table', text: desc.tableName });
+      descHeader.createSpan({ cls: 'rolldeo-result-description-value', text: desc.rolledValue });
+
+      const descContent = descItem.createDiv({ cls: 'rolldeo-result-description-content' });
       await MarkdownRenderer.render(
         this.app,
-        this.result.text,
-        resultContent as HTMLElement,
+        desc.description,
+        descContent,
         '',
         this.component
       );
     }
+  }
 
-    // Refresh descriptions
-    const descriptionsDiv = this.contentEl.querySelector('.rolldeo-result-descriptions');
-    if (descriptionsDiv) {
-      descriptionsDiv.remove();
+  private renderTraceTab(container: HTMLElement, trace: RollTrace) {
+    // Trace header with controls
+    const traceHeader = container.createDiv({ cls: 'rolldeo-trace-header' });
+
+    const traceTitle = traceHeader.createDiv({ cls: 'rolldeo-trace-title' });
+    const traceIcon = traceTitle.createSpan({ cls: 'rolldeo-trace-title-icon' });
+    setIcon(traceIcon, 'git-branch');
+    traceTitle.createSpan({
+      text: `Execution Trace`,
+      cls: 'rolldeo-trace-title-text'
+    });
+    traceTitle.createSpan({
+      cls: 'rolldeo-trace-ops',
+      text: `(${trace.stats.nodeCount} ops, ${trace.totalTime}ms)`
+    });
+
+    // Expand/Collapse controls
+    const traceControls = traceHeader.createDiv({ cls: 'rolldeo-trace-controls' });
+
+    const expandAllBtn = traceControls.createEl('button', {
+      cls: 'rolldeo-trace-control-btn',
+      text: 'Expand All'
+    });
+    expandAllBtn.onclick = () => {
+      this.expandAllNodes(trace.root);
+      this.allTraceExpanded = true;
+      this.rerenderTraceTree(trace);
+    };
+
+    const collapseBtn = traceControls.createEl('button', {
+      cls: 'rolldeo-trace-control-btn',
+      text: 'Collapse'
+    });
+    collapseBtn.onclick = () => {
+      this.expandedTraceNodes.clear();
+      this.allTraceExpanded = false;
+      this.rerenderTraceTree(trace);
+    };
+
+    // Trace tree
+    this.traceTreeContainer = container.createDiv({ cls: 'rolldeo-trace-tree' });
+    this.renderTraceNode(this.traceTreeContainer, trace.root, 0, trace);
+
+    // Variables section (if any)
+    if (trace.stats.variablesAccessed.length > 0) {
+      const varsSection = container.createDiv({ cls: 'rolldeo-trace-vars-section' });
+      for (const varName of trace.stats.variablesAccessed) {
+        const varItem = varsSection.createDiv({ cls: 'rolldeo-trace-var-item' });
+        const varIcon = varItem.createSpan({ cls: 'rolldeo-trace-var-icon' });
+        setIcon(varIcon, 'hash');
+        varItem.createSpan({ cls: 'rolldeo-trace-var-name', text: varName });
+      }
     }
 
-    if (this.plugin.settings.showDescriptions && this.result.descriptions && this.result.descriptions.length > 0) {
-      const actionsDiv = this.contentEl.querySelector('.rolldeo-result-actions');
-      const newDescDiv = this.contentEl.createDiv({ cls: 'rolldeo-result-descriptions' });
-      newDescDiv.createEl('h4', { text: 'Details' });
+    // Stats footer
+    const statsFooter = container.createDiv({ cls: 'rolldeo-trace-stats' });
+    statsFooter.createSpan({ text: `Tables: ${trace.stats.tablesAccessed.length}` });
+    statsFooter.createSpan({ text: `Variables: ${trace.stats.variablesAccessed.length}` });
+    statsFooter.createSpan({ text: `Depth: ${trace.stats.maxDepth}` });
+  }
 
-      for (const desc of this.result.descriptions) {
-        const descItem = newDescDiv.createDiv({ cls: 'rolldeo-result-description-item' });
-        const descHeader = descItem.createDiv({ cls: 'rolldeo-result-description-header' });
-        descHeader.createSpan({ cls: 'rolldeo-result-description-table', text: desc.tableName });
-        descHeader.createSpan({ cls: 'rolldeo-result-description-value', text: desc.rolledValue });
+  private rerenderTraceTree(trace: RollTrace) {
+    if (!this.traceTreeContainer) return;
 
-        const descContent = descItem.createDiv({ cls: 'rolldeo-result-description-content' });
-        await MarkdownRenderer.render(
-          this.app,
-          desc.description,
-          descContent,
-          '',
-          this.component
-        );
+    // Save scroll position of the tab content container
+    const tabContent = this.traceTreeContainer.closest('.rolldeo-result-tab-content') as HTMLElement;
+    const scrollTop = tabContent?.scrollTop || 0;
+
+    // Re-render just the trace tree
+    this.traceTreeContainer.empty();
+    this.renderTraceNode(this.traceTreeContainer, trace.root, 0, trace);
+
+    // Restore scroll position
+    if (tabContent) {
+      tabContent.scrollTop = scrollTop;
+    }
+  }
+
+  private expandAllNodes(node: TraceNode) {
+    this.expandedTraceNodes.add(node.id);
+    for (const child of node.children) {
+      this.expandAllNodes(child);
+    }
+  }
+
+  private renderTraceNode(container: HTMLElement, node: TraceNode, depth: number, trace: RollTrace) {
+    const hasChildren = node.children.length > 0;
+    const isExpanded = this.expandedTraceNodes.has(node.id);
+
+    const nodeEl = container.createDiv({
+      cls: `rolldeo-trace-node ${hasChildren ? 'has-children' : ''} ${isExpanded ? 'is-expanded' : ''}`,
+    });
+    nodeEl.style.setProperty('--depth', String(depth));
+
+    // Node header (clickable if has children)
+    const nodeHeader = nodeEl.createDiv({ cls: 'rolldeo-trace-node-header' });
+
+    // Collapse indicator
+    if (hasChildren) {
+      const collapseIcon = nodeHeader.createSpan({ cls: 'rolldeo-trace-collapse-icon' });
+      setIcon(collapseIcon, isExpanded ? 'chevron-down' : 'chevron-right');
+    } else {
+      nodeHeader.createSpan({ cls: 'rolldeo-trace-collapse-spacer' });
+    }
+
+    // Node type icon
+    const typeIcon = nodeHeader.createSpan({ cls: `rolldeo-trace-type-icon rolldeo-trace-type-${node.type}` });
+    setIcon(typeIcon, this.getTraceNodeIcon(node.type));
+
+    // Node label
+    nodeHeader.createSpan({ cls: 'rolldeo-trace-node-label', text: node.label });
+
+    // Node output (abbreviated)
+    const outputText = String(node.output.value);
+    if (outputText && outputText !== node.label) {
+      const outputEl = nodeHeader.createSpan({ cls: 'rolldeo-trace-node-output' });
+      outputEl.createSpan({ text: '→ ' });
+      outputEl.createSpan({ text: outputText.length > 50 ? outputText.slice(0, 50) + '...' : outputText });
+    }
+
+    // Duration badge
+    if (node.duration !== undefined && node.duration > 0) {
+      nodeHeader.createSpan({
+        cls: 'rolldeo-trace-node-duration',
+        text: `${node.duration}ms`
+      });
+    }
+
+    // Toggle expansion on click
+    if (hasChildren) {
+      nodeHeader.onclick = (e) => {
+        e.stopPropagation();
+        if (this.expandedTraceNodes.has(node.id)) {
+          this.expandedTraceNodes.delete(node.id);
+        } else {
+          this.expandedTraceNodes.add(node.id);
+        }
+        this.rerenderTraceTree(trace);
+      };
+    }
+
+    // Node details (shown when selected - for now show inline if expanded)
+    if (isExpanded && hasChildren) {
+      // Show details panel for selected node
+      const detailsPanel = nodeEl.createDiv({ cls: 'rolldeo-trace-node-details' });
+
+      if (node.label !== 'Root') {
+        const labelRow = detailsPanel.createDiv({ cls: 'rolldeo-trace-detail-row' });
+        labelRow.createSpan({ cls: 'rolldeo-trace-detail-label', text: 'Label:' });
+        labelRow.createSpan({ cls: 'rolldeo-trace-detail-value', text: node.label });
       }
 
-      // Move descriptions before actions
-      if (actionsDiv) {
-        this.contentEl.insertBefore(newDescDiv, actionsDiv);
+      const outputRow = detailsPanel.createDiv({ cls: 'rolldeo-trace-detail-row' });
+      outputRow.createSpan({ cls: 'rolldeo-trace-detail-label', text: 'Output:' });
+      outputRow.createSpan({ cls: 'rolldeo-trace-detail-value', text: String(node.output.value) });
+
+      const inputRow = detailsPanel.createDiv({ cls: 'rolldeo-trace-detail-row' });
+      inputRow.createSpan({ cls: 'rolldeo-trace-detail-label', text: 'Input:' });
+      inputRow.createSpan({ cls: 'rolldeo-trace-detail-value', text: node.input.raw || '(none)' });
+
+      const typeRow = detailsPanel.createDiv({ cls: 'rolldeo-trace-detail-row' });
+      typeRow.createSpan({ cls: 'rolldeo-trace-detail-label', text: 'Type:' });
+      const typeValue = typeRow.createSpan({ cls: 'rolldeo-trace-detail-value rolldeo-trace-type-badge' });
+      typeValue.createSpan({ cls: `rolldeo-trace-type-${node.type}`, text: node.type });
+
+      // Children container
+      const childrenContainer = nodeEl.createDiv({ cls: 'rolldeo-trace-children' });
+      for (const child of node.children) {
+        this.renderTraceNode(childrenContainer, child, depth + 1, trace);
       }
     }
+  }
+
+  private getTraceNodeIcon(type: TraceNodeType): string {
+    const iconMap: Record<TraceNodeType, string> = {
+      'root': 'play',
+      'table_roll': 'table-2',
+      'template_roll': 'file-text',
+      'template_ref': 'link',
+      'entry_select': 'check-circle-2',
+      'expression': 'code',
+      'dice_roll': 'dices',
+      'math_eval': 'calculator',
+      'variable_access': 'hash',
+      'placeholder_access': 'at-sign',
+      'conditional': 'git-branch',
+      'multi_roll': 'repeat',
+      'instance': 'box',
+      'composite_select': 'layers',
+      'collection_merge': 'merge',
+      'capture_multi_roll': 'archive',
+      'capture_access': 'hash',
+      'collect': 'list',
+    };
+    return iconMap[type] || 'circle';
+  }
+
+  private async refreshContent() {
+    await this.renderModal();
   }
 
   onClose() {
@@ -1347,7 +1574,7 @@ class TablePickerModal extends FuzzySuggestModal<TablePickerItem> {
     }
   }
 
-  onChooseItem(item: TablePickerItem, evt: MouseEvent | KeyboardEvent) {
+  onChooseItem(item: TablePickerItem) {
     try {
       let result: RollResult;
 
@@ -1360,7 +1587,17 @@ class TablePickerModal extends FuzzySuggestModal<TablePickerItem> {
       if (this.onSelect) {
         this.onSelect(result);
       } else {
-        new Notice(result.text);
+        // Show result modal instead of toast
+        new RollResultModal(
+          this.app,
+          this.plugin,
+          result,
+          item.name,
+          item.collectionName,
+          item.id,
+          item.collectionId,
+          item.type === 'template'
+        ).open();
       }
     } catch (error) {
       console.error('Rolldeo: Error rolling table', error);
@@ -1385,7 +1622,7 @@ class RolldeoSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Rolldeo Settings' });
+    containerEl.createEl('h2', { text: 'Rolldeo Roller Settings' });
 
     new Setting(containerEl)
       .setName('Tables folder')

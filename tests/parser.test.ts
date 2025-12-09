@@ -18,7 +18,7 @@ describe('Parser', () => {
       expect(matches).toHaveLength(1);
       expect(matches[0].expression).toBe('world');
       expect(matches[0].start).toBe(6);
-      expect(matches[0].end).toBe(17);
+      expect(matches[0].end).toBe(15); // 'Hello {{world}}' ends at position 15
     });
 
     it('should extract multiple expressions', () => {
@@ -443,11 +443,12 @@ describe('Parser', () => {
   describe('parseTemplate', () => {
     it('should parse template with mixed content', () => {
       const tokens = parseTemplate('Hello {{name}}, you rolled {{dice:1d20}}!');
-      expect(tokens).toHaveLength(4);
+      expect(tokens).toHaveLength(5);
       expect(tokens[0].type).toBe('literal');
       expect(tokens[1].type).toBe('table');
       expect(tokens[2].type).toBe('literal');
       expect(tokens[3].type).toBe('dice');
+      expect(tokens[4].type).toBe('literal'); // trailing "!"
     });
 
     it('should handle template with only expressions', () => {

@@ -67,17 +67,18 @@ describe('RandomTableEngine', () => {
 
     it('should validate and reject invalid collection', () => {
       const engine = new RandomTableEngine();
-      const collection = createTestCollection('invalid', {
+      // Invalid: missing specVersion (required field)
+      const invalidDoc = {
         metadata: {
-          name: '',
+          name: 'Test',
           namespace: 'test',
           version: '1.0.0',
-          specVersion: '1.0',
+          // specVersion is missing - this should fail validation
         },
         tables: [],
-      });
+      } as unknown as RandomTableDocument;
 
-      const result = engine.validate(collection.doc);
+      const result = engine.validate(invalidDoc);
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
     });
@@ -131,9 +132,8 @@ describe('RandomTableEngine', () => {
       expect(['Red', 'Blue', 'Green']).toContain(result?.text);
     });
 
-    it('should return null for unknown table', () => {
-      const result = engine.roll('unknownTable', 'test');
-      expect(result).toBeNull();
+    it('should throw for unknown table', () => {
+      expect(() => engine.roll('unknownTable', 'test')).toThrow('Table not found');
     });
   });
 
@@ -170,33 +170,38 @@ describe('RandomTableEngine', () => {
   });
 
   describe('composite tables', () => {
-    it('should roll composite table with pattern', () => {
+    it('should roll composite table by selecting from source tables', () => {
       const engine = new RandomTableEngine();
       const collection = createTestCollection('test', {
         tables: [
           {
-            id: 'adjNoun',
-            name: 'Adjective Noun',
+            id: 'adjectives',
+            name: 'Adjectives',
+            type: 'simple',
+            entries: [{ value: 'Big' }, { value: 'Small' }],
+          },
+          {
+            id: 'nouns',
+            name: 'Nouns',
+            type: 'simple',
+            entries: [{ value: 'Dog' }, { value: 'Cat' }],
+          },
+          {
+            id: 'mixedWords',
+            name: 'Mixed Words',
             type: 'composite',
             sources: [
-              {
-                name: 'adjective',
-                entries: [{ value: 'Big' }, { value: 'Small' }],
-              },
-              {
-                name: 'noun',
-                entries: [{ value: 'Dog' }, { value: 'Cat' }],
-              },
+              { tableId: 'adjectives', weight: 1 },
+              { tableId: 'nouns', weight: 1 },
             ],
-            pattern: '{{@adjective}} {{@noun}}',
           },
         ],
       });
       engine.loadCollection(collection.doc, collection.id);
 
-      const result = engine.roll('adjNoun', 'test');
+      const result = engine.roll('mixedWords', 'test');
       expect(result).toBeDefined();
-      expect(result?.text).toMatch(/^(Big|Small) (Dog|Cat)$/);
+      expect(['Big', 'Small', 'Dog', 'Cat']).toContain(result?.text);
     });
   });
 
@@ -221,10 +226,7 @@ describe('RandomTableEngine', () => {
             id: 'mixedCollection',
             name: 'Mixed',
             type: 'collection',
-            items: [
-              { table: 'colorsTable', weight: 1 },
-              { table: 'sizesTable', weight: 1 },
-            ],
+            collections: ['colorsTable', 'sizesTable'],
           },
         ],
       });
@@ -258,7 +260,7 @@ describe('RandomTableEngine', () => {
       });
       engine.loadCollection(collection.doc, collection.id);
 
-      const result = engine.roll('colorSentence', 'test');
+      const result = engine.rollTemplate('colorSentence', 'test');
       expect(result).toBeDefined();
       expect(result?.text).toBe('The color is red.');
     });
@@ -387,7 +389,7 @@ describe('RandomTableEngine', () => {
       });
       engine.loadCollection(collection.doc, collection.id);
 
-      const result = engine.roll('inventory', 'test');
+      const result = engine.rollTemplate('inventory', 'test');
       expect(result).toBeDefined();
       // Should contain 3 items separated by default separator
       const items = result?.text.split(', ');
@@ -419,7 +421,7 @@ describe('RandomTableEngine', () => {
       });
       engine.loadCollection(collection.doc, collection.id);
 
-      const result = engine.roll('uniqueColors', 'test');
+      const result = engine.rollTemplate('uniqueColors', 'test');
       const items = result?.text.split(', ');
       // All items should be unique
       const uniqueItems = new Set(items);
@@ -427,7 +429,7 @@ describe('RandomTableEngine', () => {
     });
   });
 
-  describe('getAllTables', () => {
+  describe('listTables', () => {
     it('should return all loaded tables', () => {
       const engine = new RandomTableEngine();
       const collection = createTestCollection('test', {
@@ -448,7 +450,7 @@ describe('RandomTableEngine', () => {
       });
       engine.loadCollection(collection.doc, collection.id);
 
-      const tables = engine.getAllTables();
+      const tables = engine.listTables('test');
       expect(tables).toHaveLength(2);
       expect(tables.map((t) => t.id)).toContain('table1');
       expect(tables.map((t) => t.id)).toContain('table2');
@@ -456,7 +458,7 @@ describe('RandomTableEngine', () => {
   });
 
   describe('error handling', () => {
-    it('should handle recursion limit', () => {
+    it('should throw on recursion limit exceeded', () => {
       const engine = new RandomTableEngine({ config: { maxRecursionDepth: 5 } });
       const collection = createTestCollection('test', {
         tables: [
@@ -470,9 +472,8 @@ describe('RandomTableEngine', () => {
       });
       engine.loadCollection(collection.doc, collection.id);
 
-      // Should not throw, but should stop at recursion limit
-      const result = engine.roll('recursiveTable', 'test');
-      expect(result).toBeDefined();
+      // Should throw when recursion limit is exceeded
+      expect(() => engine.roll('recursiveTable', 'test')).toThrow('Recursion limit exceeded');
     });
   });
 });
