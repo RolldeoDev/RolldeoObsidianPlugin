@@ -1,7 +1,7 @@
 {
 	"id": "rolldeo-roller",
 	"name": "Rolldeo Roller",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"minAppVersion": "0.15.0",
 	"description": "A random table roller for TTRPGs and worldbuilding. Roll on weighted tables, use dice expressions, chain table references, and insert results directly into notes. Implements the Random Table JSON Spec v1.0.",
 	"author": "Rolldeo",

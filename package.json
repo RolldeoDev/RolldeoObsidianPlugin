@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-rolldeo-roller",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Rolldeo Roller - Roll on random tables from JSON files in your Obsidian vault",
 	"main": "main.js",
 	"scripts": {
