@@ -21,7 +21,7 @@ import {
 import { RandomTableEngine, TableInfo, TemplateInfo, RollOptions } from './engine/core';
 import type { RandomTableDocument, RollResult } from './engine/types';
 import type { RollTrace, TraceNode, TraceNodeType } from './engine/core/trace';
-
+//Update to summon obsidian bot
 // ============================================================================
 // Constants
 // ============================================================================
