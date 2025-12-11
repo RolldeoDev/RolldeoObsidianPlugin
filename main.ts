@@ -723,7 +723,7 @@ class RollerView extends ItemView {
       emptyState.createEl('p', { text: 'No table collections found' });
       emptyState.createEl('p', {
         cls: 'rolldeo-empty-hint',
-        text: 'Add json files with specification version to your vault'
+        text: 'Add JSON files to your vault'
       });
       return;
     }
