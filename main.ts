@@ -98,7 +98,7 @@ export default class RolldeoPlugin extends Plugin {
     this.registerView(VIEW_TYPE_ROLLER, (leaf) => new RollerView(leaf, this));
 
     // Add ribbon icon
-    this.addRibbonIcon('dice', 'Open Rolldeo roller', () => {
+    this.addRibbonIcon('dice', 'Open rolldeo roller', () => {
       void this.activateView();
     });
 
@@ -723,7 +723,7 @@ class RollerView extends ItemView {
       emptyState.createEl('p', { text: 'No table collections found' });
       emptyState.createEl('p', {
         cls: 'rolldeo-empty-hint',
-        text: 'Add JSON files with specVersion "1.0" to your vault'
+        text: 'Add json files with specification version "1.0" to your vault'
       });
       return;
     }
