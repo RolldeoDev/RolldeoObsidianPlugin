@@ -98,7 +98,6 @@ export default class RolldeoPlugin extends Plugin {
     this.registerView(VIEW_TYPE_ROLLER, (leaf) => new RollerView(leaf, this));
 
     // Add ribbon icon
-    // eslint-disable-next-line obsidianmd/ui/sentence-case -- Rolldeo is a brand name
     this.addRibbonIcon('dice', 'Open Rolldeo roller', () => {
       void this.activateView();
     });
@@ -610,6 +609,7 @@ class RollerView extends ItemView {
   }
 
   async onOpen() {
+    await super.onOpen();
     this.containerEl_content = this.containerEl.children[1] as HTMLElement;
     this.containerEl_content.empty();
     this.containerEl_content.addClass('rolldeo-view');
@@ -619,6 +619,7 @@ class RollerView extends ItemView {
   }
 
   async onClose() {
+    await super.onClose();
     this.component.unload();
     this.containerEl_content.empty();
   }
@@ -722,8 +723,7 @@ class RollerView extends ItemView {
       emptyState.createEl('p', { text: 'No table collections found' });
       emptyState.createEl('p', {
         cls: 'rolldeo-empty-hint',
-        // eslint-disable-next-line obsidianmd/ui/sentence-case -- specVersion is a JSON property name
-        text: 'Add .json files with specVersion: "1.0" to your vault'
+        text: 'Add JSON files with specVersion "1.0" to your vault'
       });
       return;
     }
